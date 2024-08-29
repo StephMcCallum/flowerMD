@@ -739,14 +739,24 @@ class Simulation(hoomd.simulation.Simulation):
             Lz=final_box_lengths[2],
         )
         resize_trigger = hoomd.trigger.Periodic(period)
-        box_ramp = hoomd.variant.Ramp(
-            A=0, B=1, t_start=self.timestep, t_ramp=int(n_steps)
-        )
-        initial_box = self.state.box
+        #box_ramp = hoomd.variant.Ramp(
+        #    A=0, B=1, t_start=self.timestep, t_ramp=int(n_steps)
+        #)
+        #initial_box = self.state.box
 
+        #changing to inverse ramp based on Hoomd test file
+        inverse_box_ramp = hoomd.variant.box.InverseVolumeRamp(
+            initial_box=self.state.box,
+            final_volume=?? ,
+            t_start=self.timestep,
+            t_ramp=int(n_steps)
+        )
+
+        #removing box1 and box2 parameters
         box_resizer = hoomd.update.BoxResize(
-            box1=initial_box,
-            box2=final_box,
+            #box1=initial_box,
+            #box2=final_box,
+            box=inverse_box_ramp
             variant=box_ramp,
             trigger=resize_trigger,
         )
