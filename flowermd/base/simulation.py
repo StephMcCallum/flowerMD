@@ -747,7 +747,7 @@ class Simulation(hoomd.simulation.Simulation):
         #changing to inverse ramp based on Hoomd test file
         inverse_box_ramp = hoomd.variant.box.InverseVolumeRamp(
             initial_box=self.state.box,
-            final_volume=?? ,
+            final_volume=100,#need to update
             t_start=self.timestep,
             t_ramp=int(n_steps)
         )
