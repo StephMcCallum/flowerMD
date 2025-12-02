@@ -149,6 +149,24 @@ class Molecule:
         topology_information["improper_types"] = self.improper_types
         return topology_information
 
+    @property
+    def system_information(self):
+        """Dictionary of system information for the molecule.
+
+        The dictionary contains the following keys:
+
+            - `box`: numpy array of box dimensions
+
+        """
+        if self.box:
+            system_information = dict()
+            system_information["box"] = self.box
+            #add particles positions?
+            return system_information
+        else:
+            print("No system information present.")
+            return
+
     def coarse_grain(self, beads=None):
         """Coarse grain the molecule.
 
