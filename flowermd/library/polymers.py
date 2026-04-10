@@ -523,3 +523,76 @@ class EllipsoidChainRand(Polymer):
                 if d[i] > pos_range[i]:
                     d[i] -= pos_range[i]
         return d
+
+class SphereLinkerChain(Polymer):
+    """Create an rigid body model of a polymer chain with two linkers for backmapping.
+    Parameters
+    ----------
+    lengths : int, required
+        The number of monomer repeat units in the chain.
+    num_mols : int, required
+        The number of chains to create.
+    lpar : float, required
+        The semi-axis length of the ellipsoid bead along its major axis.
+    bead_mass : float, required
+        The mass of the ellipsoid bead.
+    name : str, default 'ellipsoid_chain'
+        The name of the polymer. Setting the name is
+        important for using the `speedup_by_moltag=True`
+        parameter with polydisperse systems, or other
+        mixtures. This helps improve performance
+        for large systems.
+    """
+
+    def __init__(
+        self,
+        lengths,
+        num_mols,
+        com_dist,
+        bead_mass,
+        bond_L_A=0.1,
+        bond_L_C
+        name="sphere_linker_chain",
+    ):
+        self.bead_mass = bead_mass
+        self.com_dist = com_dist
+        self.bond_L_A = bond_L_A
+        self.bond_L_C = bond_L_C
+        # get the indices of the particles in a rigid body
+        self.bead_constituents_types = ["A1", "A2", "X"]
+        super(SphereLinkerChain, self).__init__(
+            lengths=lengths, num_mols=num_mols, name=name
+        )
+
+    def _build(self, length):
+        # Build bead
+        bead = mb.Compound(name="spherelinker")
+        center = mb.Compound(pos=(0, 0, 0), name="X", mass=self.bead_mass)
+        anchor_pos = math.sqrt(self.com_dist**2-self.bond_L_A**2)
+        anchor_1 = mb.Compound(
+            pos=(0, self.bond_L_A / 2, anchor_pos),
+            name="A1",
+            mass=0,
+        )
+        anchor_2 = mb.Compound(
+            pos=(0, -self.bond_L_A / 2, anchor_pos),
+            name="A2",
+            mass=0
+        )
+        bead.add([center, anchor_1, anchor_2])
+        #bead.add_bond([center, head])
+
+        chain = mb.Compound()
+        last_bead = None
+        for i in range(length):
+            translate_by = np.array([0, 0, (i*self.com_dist*2)])
+            this_bead = mb.clone(bead)
+            this_bead.translate(by=translate_by)
+            chain.add(this_bead)
+            if last_bead:
+                chain.add_bond([this_bead.children[0], last_bead.children[1]])
+                chain.add_bond([this_bead.children[3], last_bead.children[2]])
+            last_bead = this_bead
+        chain.name = f"{self.name}_{length}mer"
+
+        return chain
