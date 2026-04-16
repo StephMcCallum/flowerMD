@@ -206,3 +206,109 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
         "orientations": [[1, 0, 0, 0]] * len(local_coords),
     }
     return rigid_frame, rigid_constrain
+
+def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
+    """Create rigid bodies from a snapshot.
+
+    This is designed to be used with flowerMD's built in library
+    for simulating ellipsoidal chains.
+    As a result, this will not work for setting up rigid bodies
+    for other kinds of systems.
+
+    See `flowermd.library.polymer.EllipsoidChain` and
+    `flowermd.library.forcefields.EllipsoidForcefield`.
+
+    Parameters
+    ----------
+    snapshot : gsd.hoomd.Snapshot; required
+        The snapshot of the system.
+        Pass in `flowermd.base.System.hoomd_snapshot()`.
+    lpar : float; required
+        The radius of the major axis of the ellipsoid
+    lperp : float; required
+        The radius of the minor axis of the ellipsoid
+
+    Returns
+    -------
+    rigid_frame : gsd.hoomd.Frame
+        The snapshot of the rigid bodies.
+    rigid_constrain : hoomd.md.constrain.Rigid
+        The rigid body constrain object.
+
+    """
+    bead_len = 3  # Number of particles belonging to 1 rigid body
+    typeids = snapshot.particles.typeid.reshape(-1, bead_len)
+    matches = np.where((typeids == typeids))
+    rigid_const_idx = (matches[0] * bead_len + matches[1]).reshape(-1, bead_len)
+    n_rigid = rigid_const_idx.shape[0]  # number of ellipsoid monomers
+
+    rigid_masses = []
+    rigid_pos = []
+    rigid_moi = []
+    # Find the mass, position and MOI for reach rigid center
+    for idx in rigid_const_idx:
+        mass = np.sum(np.array(snapshot.particles.mass)[idx])
+        pos = snapshot.particles.position[idx][2]
+        rigid_masses.append(mass)
+        rigid_pos.append(pos)
+
+        # both a and b axes are the same, so Ixx = Iyy
+        Ixx = Iyy = mass / 5 * (lpar**2 + lperp**2)
+        rigid_moi.append([Ixx, Iyy, 0])
+
+    rigid_frame = gsd.hoomd.Frame()
+    rigid_frame.particles.types = ["R"] + snapshot.particles.types
+    rigid_frame.particles.N = n_rigid + snapshot.particles.N
+    rigid_frame.particles.typeid = np.concatenate(
+        (([0] * n_rigid), snapshot.particles.typeid + 1)
+    )
+    rigid_frame.particles.mass = np.concatenate(
+        (rigid_masses, snapshot.particles.mass)
+    )
+    rigid_frame.particles.position = np.concatenate(
+        (rigid_pos, snapshot.particles.position)
+    )
+    rigid_frame.particles.moment_inertia = np.concatenate(
+        (rigid_moi, np.zeros((snapshot.particles.N, 3)))
+    )
+    rigid_frame.particles.orientation = [[1, 0, 0, 0]] * (
+        n_rigid + snapshot.particles.N
+    )
+    rigid_frame.particles.body = np.concatenate(
+        (
+            np.arange(n_rigid),
+            np.arange(n_rigid).repeat(rigid_const_idx.shape[1]),
+        )
+    )
+    rigid_frame.configuration.box = snapshot.configuration.box
+
+    # set up bonds
+    if snapshot.bonds.N > 0:
+        rigid_frame.bonds.N = snapshot.bonds.N
+        rigid_frame.bonds.types = snapshot.bonds.types
+        rigid_frame.bonds.typeid = snapshot.bonds.typeid
+        rigid_frame.bonds.group = [
+            list(np.add(g, n_rigid)) for g in snapshot.bonds.group
+        ]
+    # set up angles
+    if snapshot.angles.N > 0:
+        rigid_frame.angles.N = snapshot.angles.N
+        rigid_frame.angles.types = snapshot.angles.types
+        rigid_frame.angles.typeid = snapshot.angles.typeid
+        rigid_frame.angles.group = [
+            list(np.add(g, n_rigid)) for g in snapshot.angles.group
+        ]
+
+    # find local coordinates of the particles in the first rigid body
+    # only need to find the local coordinates for the first rigid body
+    local_coords = (
+        snapshot.particles.position[rigid_const_idx[0]] - rigid_pos[0]
+    )
+
+    rigid_constrain = hoomd.md.constrain.Rigid()
+    rigid_constrain.body["R"] = {
+        "constituent_types": ["A1","A2","X"],
+        "positions": local_coords,
+        "orientations": [[1, 0, 0, 0]] * len(local_coords),
+    }
+    return rigid_frame, rigid_constrain
