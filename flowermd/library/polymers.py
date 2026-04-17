@@ -563,9 +563,11 @@ class SphereLinkerChain(Polymer):
         name="sphere_linker_chain",
     ):
         self.bead_mass = bead_mass
+        self.density = density
         N = lengths * num_mols
         L = np.cbrt(N / self.density)
         self.L = L
+        self.box = mb.Box(lengths=np.array([L] * 3))
         self.com_pos = com_pos
         self.anchor_1_pos = anchor_1_pos
         self.anchor_2_pos = anchor_2_pos
@@ -581,16 +583,15 @@ class SphereLinkerChain(Polymer):
         # Build bead
         bead = mb.Compound(name="spherelinker")
         center = mb.Compound(pos=(0, 0, 0), name="X", mass=self.bead_mass)
-        anchor_pos = math.sqrt(self.com_dist**2-self.bond_L_A**2)
         anchor_1 = mb.Compound(
             pos=self.anchor_1_pos,
             name="A1",
-            mass=0,#does this need to be nonzero for the rigid body to include it?
+            mass=0.01,#does this need to be nonzero for the rigid body to include it?
         )
         anchor_2 = mb.Compound(
             pos=self.anchor_2_pos,
             name="A2",
-            mass=0
+            mass=0.01
         )
         bead.add([anchor_1, anchor_2, center])
 
@@ -599,10 +600,11 @@ class SphereLinkerChain(Polymer):
         r_1 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_1_pos)))
         r_2 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_2_pos)))
         radius = max(r_1,r_2)
+        self.radius = radius
         rand_range = (self.L / 2) - radius
         for i in range(length):
             translate_by = np.random.uniform(low=-1, high=1, size=(3,))
-            translate_by /= np.linalg.norm(translate_by) * self.bond_L
+            translate_by /= np.linalg.norm(translate_by) * self.bond_L_C
             this_bead = mb.clone(bead)
 
             if last_bead:

@@ -864,35 +864,32 @@ class SphereLinkerFF_DPD(BaseHOOMDForcefield):
         gamma,
         kT,
         r_cut,
-        angle_k=None,
-        angle_theta0=None,
         bond_k=100,
-        bond_r0=1.1,
+        bond_A_r0=1.1,
+        bond_C_r0=1.0,
         nlist=hoomd.md.nlist.Cell,
         nlist_buffer=0.40,
     ):
         self.epsilon = epsilon
-        self.lpar = lpar
-        self.lperp = lperp
         self.gamma = gamma
         self.A = A
         self.kT = kT
         self.r_cut = r_cut
-        self.angle_k = angle_k
-        self.angle_theta0 = angle_theta0
         self.bond_k = bond_k
-        self.bond_r0 = bond_r0
+        self.bond_A_r0 = bond_A_r0
+        self.bond_C_r0 = bond_C_r0
         self.nlist = nlist
         self.nlist_buffer = nlist_buffer
         hoomd_forces = self._create_forcefield()
-        super(EllipsoidFF_DPD, self).__init__(hoomd_forces)
+        super(SphereLinkerFF_DPD, self).__init__(hoomd_forces)
 
     def _create_forcefield(self):
         forces = []
         # Bonds
         bond = hoomd.md.bond.Harmonic()
-        bond.params["X-X"] = dict(k=self.bond_k, r0=self.bond_r0)
-        bond.params["A2-A1"] = dict(k=0, r0=0)
+        bond.params["X-X"] = dict(k=self.bond_k, r0=self.bond_A_r0)
+        bond.params["A1-A2"] = dict(k=self.bond_k, r0=self.bond_C_r0)
+        bond.params["A2-A1"] = dict(k=self.bond_k, r0=self.bond_C_r0)
         forces.append(bond)
         # DPD Pairs
         nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["body"])

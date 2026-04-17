@@ -207,7 +207,7 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
     }
     return rigid_frame, rigid_constrain
 
-def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
+def create_rigid_chain(snapshot,radius):
     """Create rigid bodies from a snapshot.
 
     This is designed to be used with flowerMD's built in library
@@ -223,10 +223,7 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
     snapshot : gsd.hoomd.Snapshot; required
         The snapshot of the system.
         Pass in `flowermd.base.System.hoomd_snapshot()`.
-    lpar : float; required
-        The radius of the major axis of the ellipsoid
-    lperp : float; required
-        The radius of the minor axis of the ellipsoid
+    radius : float, required
 
     Returns
     -------
@@ -252,9 +249,8 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
         rigid_masses.append(mass)
         rigid_pos.append(pos)
 
-        # both a and b axes are the same, so Ixx = Iyy
-        Ixx = Iyy = mass / 5 * (lpar**2 + lperp**2)
-        rigid_moi.append([Ixx, Iyy, 0])
+        I = 2/5 * mass * radius**2
+        rigid_moi.append([I, I, I])
 
     rigid_frame = gsd.hoomd.Frame()
     rigid_frame.particles.types = ["R"] + snapshot.particles.types
@@ -289,14 +285,6 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
         rigid_frame.bonds.typeid = snapshot.bonds.typeid
         rigid_frame.bonds.group = [
             list(np.add(g, n_rigid)) for g in snapshot.bonds.group
-        ]
-    # set up angles
-    if snapshot.angles.N > 0:
-        rigid_frame.angles.N = snapshot.angles.N
-        rigid_frame.angles.types = snapshot.angles.types
-        rigid_frame.angles.typeid = snapshot.angles.typeid
-        rigid_frame.angles.group = [
-            list(np.add(g, n_rigid)) for g in snapshot.angles.group
         ]
 
     # find local coordinates of the particles in the first rigid body
