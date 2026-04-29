@@ -808,31 +808,22 @@ class EllipsoidFF_DPD(BaseHOOMDForcefield):
         forces.append(dpd)
         return forces
 
-class SphereLinkerFF_DPD(BaseHOOMDForcefield):
-    """A DPD forcefield on anisotropic rigid bodies.
+class BiAnchorBody_DPDFF(BaseHOOMDForcefield):
+    """A DPD forcefield on spherical, 3-particle rigid bodies.
 
     Notes
     -----
-    This is designed to be used with `flowermd.library.polymers.EllipsoidChainRand`
-    and uses ghost particles of type "A" for intra-molecular
-    interactions of bonds and two-body angles.
-    Ellipsoid centers (type "R") are used in inter-molecular pair interations.
-    The hoomd DPD forcefield is being used here with spherical rigid bodies of the flowerMD ellipsoid model for anchor points and orientation vectors to build back-mapping tools.
-    Spherical dimensions of lpar = lperp = 0.5 are recommended, since DPD does not consider anisotropy and for mapping to number density.
+    This is designed to be used with `flowermd.library.polymers.BiAnchorBody`.
+    Sphere centers (type "X") are used in inter-molecular pair interations.
 
     The set of interactions are:
-    1. `hoomd.md.bond.Harmonic`: Models ellipsoid bonds as tip-to-tip bonds
-    2. `hoomd.md.angle.Harmonic`: Models angles of two neighboring ellipsoids.
-    3. `hoomd.md.pair.DPD`" Model pair interactions between beads. Does not consider anisotropic shapes.
+    1. `hoomd.md.bond.Harmonic`: Models center to center and anchor to neighboring anchor bonds.
+    2. `hoomd.md.pair.DPD`" Model pair interactions between beads. Excludes bonded, body, and 1-3 interactions.
 
     Parameters
     ----------
     epsilon : float, required
         energy
-    lpar: float, required
-        Semi-axis length of the ellipsoid along the major axis.
-    lperp : float, required
-        Semi-axis length of the ellipsoid along the minor axis.
     A : int, required
         DPD pair-wise drag force coefficient
     gamma : int, required
@@ -847,7 +838,9 @@ class SphereLinkerFF_DPD(BaseHOOMDForcefield):
         Equilibrium angle between 2 consecutive beads.
     bond_k : float, required
         Spring constant in harmonic bond.
-    bond_r0: float, required
+    bond_A_r0: float, required
+        Equilibrium distance between 2 ellipsoid tips.
+    bond_C_r0: float, required
         Equilibrium distance between 2 ellipsoid tips.
     nlist : type, default hoomd.md.nlist.Cell
         A class (not an instance) of the HOOMD neighbor list
@@ -881,7 +874,7 @@ class SphereLinkerFF_DPD(BaseHOOMDForcefield):
         self.nlist = nlist
         self.nlist_buffer = nlist_buffer
         hoomd_forces = self._create_forcefield()
-        super(SphereLinkerFF_DPD, self).__init__(hoomd_forces)
+        super(BiAnchorBody_DPDFF, self).__init__(hoomd_forces)
 
     def _create_forcefield(self):
         forces = []

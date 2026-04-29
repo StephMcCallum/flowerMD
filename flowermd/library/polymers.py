@@ -524,8 +524,8 @@ class EllipsoidChainRand(Polymer):
                     d[i] -= pos_range[i]
         return d
 
-class SphereLinkerChain(Polymer):
-    """Create an rigid body model of a polymer chain with two linkers for backmapping.
+class BiAnchorBody(Polymer):
+    """Create an rigid body model of a polymer chain with two anchor points for backmapping.
     Parameters
     ----------
     lengths : int, required
@@ -560,7 +560,7 @@ class SphereLinkerChain(Polymer):
         anchor_2_pos,
         bond_L_A,
         bond_L_C,
-        name="sphere_linker_chain",
+        name="bi_anchor_body",
     ):
         self.bead_mass = bead_mass
         self.density = density
@@ -575,13 +575,13 @@ class SphereLinkerChain(Polymer):
         self.bond_L_C = bond_L_C
         # get the indices of the particles in a rigid body
         self.bead_constituents_types = ["A1", "A2", "X"]
-        super(SphereLinkerChain, self).__init__(
+        super(BiAnchorBody, self).__init__(
             lengths=lengths, num_mols=num_mols, name=name
         )
 
     def _build(self, length):
         # Build bead
-        bead = mb.Compound(name="spherelinker")
+        bead = mb.Compound(name="bianchorbody")
         center = mb.Compound(pos=(0, 0, 0), name="X", mass=self.bead_mass)
         anchor_1 = mb.Compound(
             pos=self.anchor_1_pos,

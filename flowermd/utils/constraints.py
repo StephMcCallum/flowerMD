@@ -210,13 +210,8 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
 def create_rigid_chain(snapshot,radius):
     """Create rigid bodies from a snapshot.
 
-    This is designed to be used with flowerMD's built in library
-    for simulating ellipsoidal chains.
-    As a result, this will not work for setting up rigid bodies
-    for other kinds of systems.
-
-    See `flowermd.library.polymer.EllipsoidChain` and
-    `flowermd.library.forcefields.EllipsoidForcefield`.
+    See `flowermd.library.polymer.BiAnchorBody` and
+    `flowermd.library.forcefields.BiAnchorBody_DPDFF`.
 
     Parameters
     ----------
@@ -243,6 +238,7 @@ def create_rigid_chain(snapshot,radius):
     rigid_pos = []
     rigid_moi = []
     # Find the mass, position and MOI for reach rigid center
+    #TODO: update this, decide if mass in divided between three particles and if this is accurate.
     for idx in rigid_const_idx:
         mass = np.sum(np.array(snapshot.particles.mass)[idx])
         pos = snapshot.particles.position[idx][2]
