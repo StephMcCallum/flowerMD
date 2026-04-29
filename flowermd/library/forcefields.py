@@ -887,12 +887,12 @@ class SphereLinkerFF_DPD(BaseHOOMDForcefield):
         forces = []
         # Bonds
         bond = hoomd.md.bond.Harmonic()
-        bond.params["X-X"] = dict(k=self.bond_k, r0=self.bond_A_r0)
-        bond.params["A1-A2"] = dict(k=self.bond_k, r0=self.bond_C_r0)
-        bond.params["A2-A1"] = dict(k=self.bond_k, r0=self.bond_C_r0)
+        bond.params["X-X"] = dict(k=self.bond_k, r0=self.bond_C_r0)
+        bond.params["A1-A2"] = dict(k=self.bond_k, r0=self.bond_A_r0)
+        bond.params["A2-A1"] = dict(k=self.bond_k, r0=self.bond_A_r0)
         forces.append(bond)
         # DPD Pairs
-        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["body"])
+        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond","body","1-3"])
         dpd = hoomd.md.pair.DPD(
             nlist=nlist, kT=self.kT, default_r_cut=self.r_cut
         )
