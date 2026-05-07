@@ -808,6 +808,7 @@ class EllipsoidFF_DPD(BaseHOOMDForcefield):
         forces.append(dpd)
         return forces
 
+
 class TriangleChain_DPDFF(BaseHOOMDForcefield):
     """A DPD forcefield on triangular bodies.
 
@@ -836,7 +837,7 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         Spring constant in harmonic angle.
     angle_theta0: float, required
         Equilibrium angle between 2 consecutive beads.
-    bond_params: dict 
+    bond_params: dict
         dictionary with keys matching bonds, with a list of two floats, [bond_k,bond_r0]
     nlist : type, default hoomd.md.nlist.Cell
         A class (not an instance) of the HOOMD neighbor list
@@ -872,11 +873,11 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         forces = []
         # Bonds
         bond = hoomd.md.bond.Harmonic()
-        for name,params in bond_params.items():
+        for name, params in bond_params.items():
             bond.params[name] = dict(k=params[0], r0=params[1])
         forces.append(bond)
         # DPD Pairs
-        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond","1-3"])
+        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond", "1-3"])
         dpd = hoomd.md.pair.DPD(
             nlist=nlist, kT=self.kT, default_r_cut=self.r_cut
         )

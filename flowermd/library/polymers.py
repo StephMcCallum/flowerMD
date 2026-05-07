@@ -543,7 +543,7 @@ class TriangleChain(Polymer):
         parameter with polydisperse systems, or other
         mixtures. This helps improve performance
         for large systems.
-    
+
 
     anchor_1            anchor_2
                com_pos
@@ -621,7 +621,7 @@ class TriangleChain(Polymer):
             last_bead = this_bead
         chain.name = f"{self.name}_{length}mer"
         return chain
- 
+
     def pbc(self, d, pos_range):
         """Periodic boundary conditions for a reduced box considering position of A beads."""
         for i in range(3):
@@ -631,5 +631,3 @@ class TriangleChain(Polymer):
                 if d[i] > pos_range[i]:
                     d[i] -= pos_range[i]
         return d
-
-
