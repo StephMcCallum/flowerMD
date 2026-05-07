@@ -808,17 +808,17 @@ class EllipsoidFF_DPD(BaseHOOMDForcefield):
         forces.append(dpd)
         return forces
 
-class BiAnchorBody_DPDFF(BaseHOOMDForcefield):
-    """A DPD forcefield on spherical, 3-particle rigid bodies.
+class TriangleChain_DPDFF(BaseHOOMDForcefield):
+    """A DPD forcefield on triangular bodies.
 
     Notes
     -----
-    This is designed to be used with `flowermd.library.polymers.BiAnchorBody`.
+    This is designed to be used with `flowermd.library.polymers.TriangleChain`.
     Sphere centers (type "X") are used in inter-molecular pair interations.
 
     The set of interactions are:
     1. `hoomd.md.bond.Harmonic`: Models center to center and anchor to neighboring anchor bonds.
-    2. `hoomd.md.pair.DPD`" Model pair interactions between beads. Excludes bonded, body, and 1-3 interactions.
+    2. `hoomd.md.pair.DPD`" Model pair interactions between beads. Excludes bonded, and 1-3 interactions.
 
     Parameters
     ----------
@@ -836,12 +836,8 @@ class BiAnchorBody_DPDFF(BaseHOOMDForcefield):
         Spring constant in harmonic angle.
     angle_theta0: float, required
         Equilibrium angle between 2 consecutive beads.
-    bond_k : float, required
-        Spring constant in harmonic bond.
-    bond_A_r0: float, required
-        Equilibrium distance between 2 ellipsoid tips.
-    bond_C_r0: float, required
-        Equilibrium distance between 2 ellipsoid tips.
+    bond_params: dict 
+        dictionary with keys matching bonds, with a list of two floats, [bond_k,bond_r0]
     nlist : type, default hoomd.md.nlist.Cell
         A class (not an instance) of the HOOMD neighbor list
         to use for the pair force.
@@ -857,9 +853,7 @@ class BiAnchorBody_DPDFF(BaseHOOMDForcefield):
         gamma,
         kT,
         r_cut,
-        bond_k=100,
-        bond_A_r0=1.1,
-        bond_C_r0=1.0,
+        bond_params,
         nlist=hoomd.md.nlist.Cell,
         nlist_buffer=0.40,
     ):
@@ -868,39 +862,32 @@ class BiAnchorBody_DPDFF(BaseHOOMDForcefield):
         self.A = A
         self.kT = kT
         self.r_cut = r_cut
-        self.bond_k = bond_k
-        self.bond_A_r0 = bond_A_r0
-        self.bond_C_r0 = bond_C_r0
+        self.bond_params = bond_params
         self.nlist = nlist
         self.nlist_buffer = nlist_buffer
         hoomd_forces = self._create_forcefield()
-        super(BiAnchorBody_DPDFF, self).__init__(hoomd_forces)
+        super(TriangleChain_DPDFF, self).__init__(hoomd_forces)
 
     def _create_forcefield(self):
         forces = []
         # Bonds
         bond = hoomd.md.bond.Harmonic()
-        bond.params["X-X"] = dict(k=self.bond_k, r0=self.bond_C_r0)
-        bond.params["A1-A2"] = dict(k=self.bond_k, r0=self.bond_A_r0)
-        bond.params["A2-A1"] = dict(k=self.bond_k, r0=self.bond_A_r0)
+        for name,params in bond_params.items():
+            bond.params[name] = dict(k=params[0], r0=params[1])
         forces.append(bond)
         # DPD Pairs
-        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond","body","1-3"])
+        nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond","1-3"])
         dpd = hoomd.md.pair.DPD(
             nlist=nlist, kT=self.kT, default_r_cut=self.r_cut
         )
         dpd.params[("X", "X")] = dict(A=self.A, gamma=self.gamma)
         # Add zero pairs
         for pair in [
-            ("R", "R"),
             ("A1", "A1"),
             ("A2", "A2"),
             ("X", "A1"),
             ("A2", "X"),
             ("A1", "A2"),
-            ("A1", "R"),
-            ("X", "R"),
-            ("A2", "R"),
         ]:
             dpd.params[pair] = dict(A=0, gamma=0.1)
             dpd.params[pair].r_cut = 0.0

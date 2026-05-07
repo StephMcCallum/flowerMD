@@ -524,7 +524,7 @@ class EllipsoidChainRand(Polymer):
                     d[i] -= pos_range[i]
         return d
 
-class BiAnchorBody(Polymer):
+class TriangleChain(Polymer):
     """Create an rigid body model of a polymer chain with two anchor points for backmapping.
     Parameters
     ----------
@@ -537,7 +537,7 @@ class BiAnchorBody(Polymer):
     com_pos : tuple (3,)
     anchor_1_pos : tuple (3,)
     anchor_2_pos : tuple (3,)
-    name : str, default 'sphere_linker_chain'
+    name : str, default 'triangle_chain'
         The name of the polymer. Setting the name is
         important for using the `speedup_by_moltag=True`
         parameter with polydisperse systems, or other
@@ -555,12 +555,12 @@ class BiAnchorBody(Polymer):
         num_mols,
         density,
         bead_mass,
-        com_pos,
+        com_pos=(0,0,0),
         anchor_1_pos,
         anchor_2_pos,
         bond_L_A,
         bond_L_C,
-        name="bi_anchor_body",
+        name="triangle_chain",
     ):
         self.bead_mass = bead_mass
         self.density = density
@@ -581,22 +581,16 @@ class BiAnchorBody(Polymer):
 
     def _build(self, length):
         # Build bead
-        bead = mb.Compound(name="bianchorbody")
-        center = mb.Compound(pos=(0, 0, 0), name="X", mass=self.bead_mass)
-        anchor_1 = mb.Compound(
-            pos=self.anchor_1_pos,
-            name="A1",
-            mass=0.01,#does this need to be nonzero for the rigid body to include it?
-        )
-        anchor_2 = mb.Compound(
-            pos=self.anchor_2_pos,
-            name="A2",
-            mass=0.01
-        )
+        bead = mb.Compound(name="anchor_triangle")
+        center = mb.Compound(pos=self.com_pos, name="X", mass=self.bead_mass)
+        anchor_1 = mb.Compound(pos=self.anchor_1_pos,name="A1",mass=self.bead_mass)
+        anchor_2 = mb.Compound(pos=self.anchor_2_pos,name="A2",mass=self.bead_mass)
         bead.add([anchor_1, anchor_2, center])
+        bead.add_bond([anchor_1,anchor_2],[anchor_1,center],[anchor_2,center])
 
         chain = mb.Compound()
         last_bead = None
+        #calculating furthest anchor point for walk step distance
         r_1 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_1_pos)))
         r_2 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_2_pos)))
         radius = max(r_1,r_2)
