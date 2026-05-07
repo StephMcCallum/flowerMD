@@ -206,4 +206,3 @@ def create_rigid_ellipsoid_chain(snapshot, lpar, lperp):
         "orientations": [[1, 0, 0, 0]] * len(local_coords),
     }
     return rigid_frame, rigid_constrain
-
