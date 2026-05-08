@@ -524,6 +524,7 @@ class EllipsoidChainRand(Polymer):
                     d[i] -= pos_range[i]
         return d
 
+
 class TriangleChain(Polymer):
     """Create an rigid body model of a polymer chain with two anchor points for backmapping.
     Parameters
@@ -583,19 +584,27 @@ class TriangleChain(Polymer):
         # Build bead
         bead = mb.Compound(name="anchor_triangle")
         center = mb.Compound(pos=self.com_pos, name="X", mass=self.bead_mass)
-        anchor_1 = mb.Compound(pos=self.anchor_1_pos,name="A1",mass=self.bead_mass)
-        anchor_2 = mb.Compound(pos=self.anchor_2_pos,name="A2",mass=self.bead_mass)
+        anchor_1 = mb.Compound(
+            pos=self.anchor_1_pos, name="A1", mass=self.bead_mass
+        )
+        anchor_2 = mb.Compound(
+            pos=self.anchor_2_pos, name="A2", mass=self.bead_mass
+        )
         bead.add([anchor_1, anchor_2, center])
-        bead.add_bond([anchor_1,anchor_2])
-        bead.add_bond([anchor_1,center])
-        bead.add_bond([anchor_2,center])
+        bead.add_bond([anchor_1, anchor_2])
+        bead.add_bond([anchor_1, center])
+        bead.add_bond([anchor_2, center])
 
         chain = mb.Compound()
         last_bead = None
-        #calculating furthest anchor point for walk step distance
-        r_1 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_1_pos)))
-        r_2 = np.linalg.norm((np.array(self.com_pos))-(np.array(self.anchor_2_pos)))
-        radius = max(r_1,r_2)
+        # calculating furthest anchor point for walk step distance
+        r_1 = np.linalg.norm(
+            (np.array(self.com_pos)) - (np.array(self.anchor_1_pos))
+        )
+        r_2 = np.linalg.norm(
+            (np.array(self.com_pos)) - (np.array(self.anchor_2_pos))
+        )
+        radius = max(r_1, r_2)
         self.radius = radius
         rand_range = (self.L / 2) - radius
         for i in range(length):
