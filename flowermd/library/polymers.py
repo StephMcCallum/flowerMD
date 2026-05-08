@@ -555,7 +555,7 @@ class TriangleChain(Polymer):
         num_mols,
         density,
         bead_mass,
-        com_pos=(0,0,0),
+        com_pos,
         anchor_1_pos,
         anchor_2_pos,
         bond_L_A,
@@ -575,7 +575,7 @@ class TriangleChain(Polymer):
         self.bond_L_C = bond_L_C
         # get the indices of the particles in a rigid body
         self.bead_constituents_types = ["A1", "A2", "X"]
-        super(BiAnchorBody, self).__init__(
+        super(TriangleChain, self).__init__(
             lengths=lengths, num_mols=num_mols, name=name
         )
 
@@ -586,7 +586,9 @@ class TriangleChain(Polymer):
         anchor_1 = mb.Compound(pos=self.anchor_1_pos,name="A1",mass=self.bead_mass)
         anchor_2 = mb.Compound(pos=self.anchor_2_pos,name="A2",mass=self.bead_mass)
         bead.add([anchor_1, anchor_2, center])
-        bead.add_bond([anchor_1,anchor_2],[anchor_1,center],[anchor_2,center])
+        bead.add_bond([anchor_1,anchor_2])
+        bead.add_bond([anchor_1,center])
+        bead.add_bond([anchor_2,center])
 
         chain = mb.Compound()
         last_bead = None

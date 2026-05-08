@@ -873,7 +873,7 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         forces = []
         # Bonds
         bond = hoomd.md.bond.Harmonic()
-        for name, params in bond_params.items():
+        for name, params in self.bond_params.items():
             bond.params[name] = dict(k=params[0], r0=params[1])
         forces.append(bond)
         # DPD Pairs
