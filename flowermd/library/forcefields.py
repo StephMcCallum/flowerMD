@@ -855,6 +855,8 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         kT,
         r_cut,
         bond_params,
+        angle_k=None,
+        angle_theta0=None,
         nlist=hoomd.md.nlist.Cell,
         nlist_buffer=0.40,
     ):
@@ -864,6 +866,8 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         self.kT = kT
         self.r_cut = r_cut
         self.bond_params = bond_params
+        self.angle_k = angle_k
+        self.angle_theta0 = angle_theta0
         self.nlist = nlist
         self.nlist_buffer = nlist_buffer
         hoomd_forces = self._create_forcefield()
@@ -876,6 +880,16 @@ class TriangleChain_DPDFF(BaseHOOMDForcefield):
         for name, params in self.bond_params.items():
             bond.params[name] = dict(k=params[0], r0=params[1])
         forces.append(bond)
+        if all([self.angle_k, self.angle_theta0]):
+            angle = hoomd.md.angle.Harmonic()
+            angle.params["A1-X-A2"] = dict(k=self.angle_k, t0=self.angle_theta0)
+            angle.params["A1-X-X"] = dict(k=0, t0=0)
+            angle.params["A2-X-X"] = dict(k=0, t0=0)
+            angle.params["X-A2-A1"] = dict(k=0, t0=0)
+            angle.params["A2-A1-X"] = dict(k=0, t0=0)
+            angle.params["A1-A2-X"] = dict(k=0, t0=0)
+            angle.params["X-X-X"] = dict(k=0, t0=0)
+            forces.append(angle)
         # DPD Pairs
         nlist = self.nlist(buffer=self.nlist_buffer, exclusions=["bond", "1-3"])
         dpd = hoomd.md.pair.DPD(

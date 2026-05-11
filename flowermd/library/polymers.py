@@ -591,7 +591,6 @@ class TriangleChain(Polymer):
             pos=self.anchor_2_pos, name="A2", mass=self.bead_mass
         )
         bead.add([anchor_1, anchor_2, center])
-        bead.add_bond([anchor_1, anchor_2])
         bead.add_bond([anchor_1, center])
         bead.add_bond([anchor_2, center])
 
