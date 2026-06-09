@@ -5,7 +5,7 @@ dependencies:
   - foyer >=1.0
   - freud >=3.4
   - gmso >=0.16.2
-  - gsd >=3.0
+  - gsd >=3.0,<5
   - grits >=0.5.1
   - hoomd>=5.0,!=5.3.0
   - mbuild >=1.0
