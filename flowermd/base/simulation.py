@@ -680,7 +680,79 @@ class Simulation(hoomd.simulation.Simulation):
         wall_force = self._wall_forces[wall_axis][0]
         self.remove_force(wall_force)
 
-    def run_update_volume(
+    def run_dpd_init(
+        self,
+        box_lengths,
+        k=20000,
+        bond_l=1.0,
+        r_cut=1.15,
+        kT=1.0,
+        A=800,
+        gamma=800,
+        sim_steps_incr=100,
+        loop_timeout=60,
+        min_pair_dist=0.97, 
+        write_at_start=True,
+    ):
+        """Run a DPD simulation on a random walk configuration for an initial dense system configuraiton.
+
+        Parameters
+        ----------
+        box_lengths : np.ndarray or unyt.array.unyt_array, shape=(3,)
+        k : int, default 20000
+        bond_l : float, default 1.0
+        r_cut : float, default 1.15
+        kT : float, default 1.0
+        A : int, default 800
+        gamma : int, default 800
+        sim_steps_incr : int, default 100
+        loop_timeout : int, default 60
+        min_pair_dist : float, default 0.97 
+        write_at_start : bool, default True
+            When set to True, triggers writers that evaluate to True
+            for the initial step to execute before the next simulation
+            time step.
+
+        Examples
+        --------
+
+        """
+        if self.reference_length and hasattr(final_box_lengths, "to"):
+            ref_unit = self.reference_length.units
+            final_box_lengths = final_box_lengths.to(ref_unit)
+            final_box_lengths /= self.reference_length
+
+        box = hoomd.Box(
+            Lx=final_box_lengths[0],
+            Ly=final_box_lengths[1],
+            Lz=final_box_lengths[2],
+        )
+
+        def _place_rand_walk(self):
+                call system RandomWalk Method here
+
+        def _dpd_sim_loop():    
+            self.set_integrator_method(
+                integrator_method=hoomd.md.methods.ConstantVolume,
+                method_kwargs={
+                    "thermostat": self._initialize_thermostat(
+                        {"kT": kT, "tau": tau_kt}
+                    ),
+                    "filter": self.integrate_group,
+                },
+            )
+            if thermalize_particles:
+                self._thermalize_system(kT)
+            std_out_logger = StdOutLogger(n_steps=n_steps, sim=self)
+            std_out_logger_printer = hoomd.update.CustomUpdater(
+                trigger=hoomd.trigger.Periodic(self._std_out_freq),
+                action=std_out_logger,
+            )
+            self.operations.updaters.append(std_out_logger_printer)
+            self.run(steps=n_steps + 1, write_at_start=write_at_start)
+            self.operations.updaters.remove(std_out_logger_printer)
+
+   def run_update_volume(
         self,
         final_box_lengths,
         n_steps,
