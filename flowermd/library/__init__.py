@@ -29,4 +29,4 @@ from .polymers import (
 )
 from .simulations.tensile import Tensile
 from .surfaces import Graphene
-from .systems import SingleChainSystem, mbuildSystem
+from .systems import SingleChainSystem, mbuildSystem, RandomWalk
