@@ -208,8 +208,13 @@ class PhantomWalk(System):
 
     def _build_system(self, **kwargs):
         #call RandomWalk
+        system = RandomWalk(
+            **kwargs
+        )
         #parameterizes DPD FF
+        system.apply_forcefield(r_cut=1.15, force_field=Bead_Spring_DPD())
         #run DPD simulation, calls DPD simulation class
+        dpd_sim = Simulation.from_system(system=)
         #update system positions from DPD output
         
         return system
