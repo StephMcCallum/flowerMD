@@ -680,7 +680,7 @@ class Simulation(hoomd.simulation.Simulation):
         wall_force = self._wall_forces[wall_axis][0]
         self.remove_force(wall_force)
 
-   def run_update_volume(
+    def run_update_volume(
         self,
         final_box_lengths,
         n_steps,

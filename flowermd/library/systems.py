@@ -84,14 +84,10 @@ class RandomWalk(System):
                 "Units for density were not given, assuming units of g/cm**3."
             )
         else:
-            self.density = density
-        self.packing_expand_factor = packing_expand_factor
-        self.edge = edge
-        self.overlap = overlap
+        self.density = density
         self.seed = seed
         self.unique_molecules = unique_molecules
-        self.fix_orientation = fix_orientation
-        super(Pack, self).__init__(
+        super(RandomWalk, self).__init__(
             molecules=molecules, base_units=base_units, **kwargs
         )
 
@@ -131,91 +127,43 @@ class RandomWalk(System):
         if not self.unique_molecules:
             compound = self.all_molecules[0]
             n_compounds = len(self.all_molecules)
-
-        rng = np.random.default_rng(self.seed)
-
-                N = #get N from self
-                L = self.box_lengths[0]
-            
-                positions = np.empty((N, 3))
-                starts = rng.uniform(0, L, size=(num_pol, 3))
-            
-                thetas = rng.uniform(0,2*np.pi,size=(num_pol,num_mon-1))
-                phis = np.arccos(rng.uniform(-1,1,size=(num_pol,num_mon-1)))
-                x = np.sin(phis)*np.cos(thetas)
-                y = np.sin(phis)*np.sin(thetas)
-                z = np.cos(phis)
-            
-                deltas = np.stack([x,y,z],axis=2) * bond_length
-                displacements = np.cumsum(deltas, axis=1)
-            
-                positions_view = positions.reshape(num_pol, num_mon, 3)
-                positions_view[:, 0, :] = starts
-                positions_view[:, 1:, :] = starts[:, None, :] + displacements
-            
-                #pbc
-                positions %= L
-                positions -= L/2
-            
-                indices = np.arange(N).reshape(num_pol, num_mon)
-                bonds = np.column_stack([
-                    indices[:, :-1].ravel(),
-                    indices[:, 1:].ravel()
-                ])
-            
-                frame = gsd.hoomd.Frame()
-                frame.particles.types = ['A']
-                frame.particles.N = N
-                frame.particles.position = positions
-                frame.bonds.N = len(bonds)
-                frame.bonds.group = bonds
-                frame.bonds.types = ['b']
-                frame.configuration.box = [L, L, L, 0, 0, 0]
-            
-                return frame
-        return system
-
-
-class PhantomWalk(System):
-    """
-    """
-
-    def __init__(
-        self,
-        molecules,
-        density: float,
-        base_units=dict(),
-        seed=12345,
-        unique_molecules=True,
-        **kwargs,
-    ):
-        if not isinstance(density, u.array.unyt_quantity):
-            self.density = density * u.Unit("g") / u.Unit("cm**3")
-            warnings.warn(
-                "Units for density were not given, assuming units of g/cm**3."
-            )
-        else:
-            self.density = density
-        self.packing_expand_factor = packing_expand_factor
-        self.edge = edge
-        self.overlap = overlap
-        self.seed = seed
-        self.unique_molecules = unique_molecules
-        self.fix_orientation = fix_orientation
-        super(Pack, self).__init__(
-            molecules=molecules, base_units=base_units, **kwargs
-        )
-
-    def _build_system(self, **kwargs):
-        #call RandomWalk
-        system = RandomWalk(
-            **kwargs
-        )
-        #parameterizes DPD FF
-        system.apply_forcefield(r_cut=1.15, force_field=Bead_Spring_DPD())
-        #run DPD simulation, calls DPD simulation class
-        dpd_sim = Simulation.from_system(system=)
-        #update system positions from DPD output
+        
+        position_array = _generate_random_walk_array()
+        #step through compounds and translate to position in array
+        for i, chain in compound:
+            last_bead = None
+            for j, bead in chain:
+                bead.tranlsate_to(pos=position_array[i,j])
+                
+        def _generate_random_walk_array():
+            rng = np.random.default_rng(self.seed)
+    
+            num_pol = n_compounds
+            num_mon = len(n_compounds[0])
+            N = num_pol * num_mon
+            L = target_box[0]
+        
+            positions = np.empty((N, 3))
+            starts = rng.uniform(0, L, size=(num_pol, 3))
+        
+            thetas = rng.uniform(0,2*np.pi,size=(num_pol,num_mon-1))
+            phis = np.arccos(rng.uniform(-1,1,size=(num_pol,num_mon-1)))
+            x = np.sin(phis)*np.cos(thetas)
+            y = np.sin(phis)*np.sin(thetas)
+            z = np.cos(phis)
+        
+            deltas = np.stack([x,y,z],axis=2) * bond_length
+            displacements = np.cumsum(deltas, axis=1)
+        
+            positions_view = positions.reshape(num_pol, num_mon, 3)
+            positions_view[:, 0, :] = starts
+            positions_view[:, 1:, :] = starts[:, None, :] + displacements
+        
+            #pbc
+            positions %= L
+            positions -= L/2
+        
+            return positions
         
         return system
 
