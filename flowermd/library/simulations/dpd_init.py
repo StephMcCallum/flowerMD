@@ -1,16 +1,13 @@
 """DPD energy relaxation simulation class."""
 
 import hoomd
-import numpy as np
+from utils.dpd_utils import simulation_energy_end
 
 from flowermd.base.simulation import Simulation
-from utils.dpd_utils import simulation_energy_end
 
 
 class DPDInit(Simulation):
-    """
-
-    """
+    """ """
 
     def __init__(
         self,

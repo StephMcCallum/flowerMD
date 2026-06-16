@@ -7,16 +7,15 @@ from .forcefields import (
     OPLS_AA_BENZENE,
     OPLS_AA_DIMETHYLETHER,
     OPLS_AA_PPS,
-    Bead_Spring_DPD,
     BaseHOOMDForcefield,
     BaseXMLForcefield,
+    Bead_Spring_DPD,
     BeadSpring,
     EllipsoidFF_DPD,
     EllipsoidForcefield,
     FF_from_file,
     KremerGrestBeadSpring,
     TableForcefield,
-
 )
 from .polymers import (
     PEEK,
@@ -31,4 +30,4 @@ from .polymers import (
 )
 from .simulations.tensile import Tensile
 from .surfaces import Graphene
-from .systems import SingleChainSystem, mbuildSystem, RandomWalk
+from .systems import RandomWalk, SingleChainSystem, mbuildSystem

@@ -2,8 +2,8 @@
 
 import mbuild as mb
 import numpy as np
-from scipy.spatial.distance import pdist
 import unyt as u
+from scipy.spatial.distance import pdist
 
 from flowermd.base.system import System
 from flowermd.utils import (
@@ -69,15 +69,16 @@ class mbuildSystem(System):
         comp.box = self.box_temp
         return comp
 
+
 class RandomWalk(System):
     """Places molecules in the system using in a random walk.
-    
+
     Assumes all beads in each molecule are identical type (e.g., all "A" beads).
     All molecules are positioned in a single vectorized computation:
     - Each chain's first bead is placed at a random location within the box
     - Subsequent beads are placed at fixed bond length steps in random directions
     - All molecules are processed simultaneously using numpy broadcasting
-    
+
     Parameters
     ----------
     molecules : Polymer or list of Polymer
@@ -93,9 +94,9 @@ class RandomWalk(System):
         If False, the single molecule is replicated.
     **kwargs
         Additional keyword arguments passed to System.
-    
+
     """
-    
+
     def __init__(
         self,
         molecules,
@@ -112,26 +113,26 @@ class RandomWalk(System):
             )
         else:
             self.density = density
-        
+
         self.seed = seed
         self.unique_molecules = unique_molecules
-        self.bond_length =  molecules.bond_lengths['A-A']
-        self.n_mols =  molecules.n_mols[0]
-        self.lengths =  molecules.lengths[0]
-        
+        self.bond_length = molecules.bond_lengths["A-A"]
+        self.n_mols = molecules.n_mols[0]
+        self.lengths = molecules.lengths[0]
+
         super(RandomWalk, self).__init__(
             molecules=molecules, base_units=base_units, **kwargs
         )
-    
+
     def _build_system(self, **kwargs):
         """Build the system by placing molecules using random walk algorithm.
-        
+
         Uses vectorized computation to generate all positions at once.
         """
-        
+
         mass_density = u.Unit("kg") / u.Unit("m**3")
         number_density = u.Unit("nm**-3")
-        
+
         if self.density.units.dimensions == mass_density.dimensions:
             target_box = get_target_box_mass_density(
                 density=self.density, mass=self.mass
@@ -147,14 +148,14 @@ class RandomWalk(System):
                 f"({mass_density.dimensions}) and "
                 f"number density ({number_density.dimensions}) are supported."
             )
-        
+
         if not self.unique_molecules and len(self._molecules) > 1:
             raise ValueError(
                 f"unique_molecules kwarg was set to {self.unique_molecules}, "
                 "which doesn't match the length of molecules given: "
                 f"{len(self._molecules)} molecules"
             )
-        
+
         if len(self._molecules) == 1:
             if not self.unique_molecules and self._molecules[0].n_mols > 1:
                 raise ValueError(
@@ -162,10 +163,10 @@ class RandomWalk(System):
                     "which doesn't match the polydisperse system given: "
                     f"{self._molecules[0].n_mols}"
                 )
-                
-        box_lengths = target_box.to_value('nm')
+
+        box_lengths = target_box.to_value("nm")
         Lx = box_lengths[0]
-        
+
         rng = np.random.default_rng(self.seed)
         all_positions = self._generate_all_random_walks_vectorized(
             num_molecules=self.n_mols,
@@ -174,29 +175,27 @@ class RandomWalk(System):
             box_lengths=Lx,
             rng=rng,
         )
-        
+
         system = mb.Compound()
-        
+
         # Apply positions to all molecules and add to system
         for idx, chain in enumerate(self.all_molecules):
             positions = all_positions[idx]
             for bead_idx, bead in enumerate(chain):
                 bead.translate_to(positions[bead_idx])
             system.add(chain)
-        
+
         # Set system box from density calculation
         system.box = mb.box.Box(box_lengths)
-        
+
         # Center system in its box
-        center = np.array([
-            system.box.Lx / 2,
-            system.box.Ly / 2,
-            system.box.Lz / 2
-        ])
+        center = np.array(
+            [system.box.Lx / 2, system.box.Ly / 2, system.box.Lz / 2]
+        )
         system.translate_to(center)
-        
+
         return system
-    
+
     def _generate_all_random_walks_vectorized(
         self,
         num_molecules,
@@ -206,10 +205,10 @@ class RandomWalk(System):
         rng,
     ):
         """Generate random walk positions for ALL identical molecules at once.
-        
+
         Uses vectorized numpy operations for efficiency. Each molecule has
         identical structure (same bead type throughout), differing only in position.
-        
+
         Parameters
         ----------
         num_molecules : int
@@ -222,7 +221,7 @@ class RandomWalk(System):
             The box dimensions [Lx, Ly, Lz] in nm.
         rng : np.random.Generator
             Random number generator instance.
-        
+
         Returns
         -------
         np.ndarray
@@ -230,20 +229,25 @@ class RandomWalk(System):
             positions in nm.
         """
         positions = np.empty((num_molecules, beads_per_molecule, 3))
-        positions[:, 0, :] = rng.uniform(0, box_lengths, size=(num_molecules, 3))
+        positions[:, 0, :] = rng.uniform(
+            0, box_lengths, size=(num_molecules, 3)
+        )
 
         for i in range(1, beads_per_molecule):
             theta = rng.uniform(0, 2 * np.pi, size=num_molecules)
             phi = np.arccos(rng.uniform(-1, 1, size=num_molecules))
 
-            direction = np.array([
-                np.sin(phi) * np.cos(theta),
-                np.sin(phi) * np.sin(theta),
-                np.cos(phi)
-            ]).T 
+            direction = np.array(
+                [
+                    np.sin(phi) * np.cos(theta),
+                    np.sin(phi) * np.sin(theta),
+                    np.cos(phi),
+                ]
+            ).T
 
-            positions[:, i, :] = positions[:, i - 1, :] + bond_length * direction
-        
+            positions[:, i, :] = (
+                positions[:, i - 1, :] + bond_length * direction
+            )
+
         positions %= box_lengths
         return positions
-
