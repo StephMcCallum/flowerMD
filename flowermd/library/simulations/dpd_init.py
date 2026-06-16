@@ -28,10 +28,10 @@ class DPDInit(Simulation):
         log_write_freq=1e3,
         log_file_name="log.txt",
     ):
-        self.A=A
-        self.r=r
-        self.r_cut=r_cut
-        self.N=N
+        self.A = A
+        self.r = r
+        self.r_cut = r_cut
+        self.N = N
         self.sim_steps_incr = sim_steps_incr
         super(DPDInit, self).__init__(
             initial_state=initial_state,
@@ -45,7 +45,7 @@ class DPDInit(Simulation):
             log_write_freq=log_write_freq,
             log_file_name=log_file_name,
         )
-        print(self.A,self.r,self.r_cut,self.density)
+        print(self.A, self.r, self.r_cut, self.density)
         self.run_NVE(n_steps=1)
         while not simulation_energy_end(
             A=self.A,

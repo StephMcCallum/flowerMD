@@ -698,6 +698,7 @@ class EllipsoidForcefield(BaseHOOMDForcefield):
         forces.append(gb)
         return forces
 
+
 class EllipsoidFF_DPD(BaseHOOMDForcefield):
     """A DPD forcefield on anisotropic rigid bodies.
 
@@ -814,6 +815,7 @@ class EllipsoidFF_DPD(BaseHOOMDForcefield):
             dpd.params[pair].r_cut = 0.0
         forces.append(dpd)
         return forces
+
 
 class DPD(BaseHOOMDForcefield):
     """A DPD forcefield to use with bead-spring systems.

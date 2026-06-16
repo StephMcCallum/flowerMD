@@ -2,6 +2,7 @@
 """Library of predefined molecules, recipes and forcefields."""
 
 from .forcefields import (
+    DPD,
     GAFF,
     OPLS_AA,
     OPLS_AA_BENZENE,
@@ -12,7 +13,6 @@ from .forcefields import (
     Bead_Spring_DPD,
     BeadSpring,
     EllipsoidFF_DPD,
-    DPD,
     EllipsoidForcefield,
     FF_from_file,
     KremerGrestBeadSpring,
