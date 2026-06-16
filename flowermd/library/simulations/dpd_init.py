@@ -1,6 +1,7 @@
 """DPD energy relaxation simulation class."""
 
 import hoomd
+
 from flowermd.base.simulation import Simulation
 from flowermd.utils.dpd_utils import simulation_energy_end
 
@@ -32,7 +33,7 @@ class DPDInit(Simulation):
         self.r_cut = r_cut
         self.N = N
         self.sim_steps_incr = sim_steps_incr
-        self.L=box
+        self.L = box
         super(DPDInit, self).__init__(
             initial_state=initial_state,
             forcefield=forcefield,

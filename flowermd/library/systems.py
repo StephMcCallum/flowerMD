@@ -118,10 +118,10 @@ class RandomWalk(System):
 
         self.seed = seed
         self.unique_molecules = unique_molecules
-        self.bond_length =  bond_length
-        self.n_mols =  molecules.n_mols[0]
-        self.lengths =  molecules.lengths[0]
-        self.buffer =  buffer
+        self.bond_length = bond_length
+        self.n_mols = molecules.n_mols[0]
+        self.lengths = molecules.lengths[0]
+        self.buffer = buffer
         super(RandomWalk, self).__init__(
             molecules=molecules, base_units=base_units, **kwargs
         )
@@ -226,24 +226,30 @@ class RandomWalk(System):
             Array of shape (num_molecules, beads_per_molecule, 3) with all
             positions in nm.
         """
-        positions = np.empty((num_molecules*beads_per_molecule, 3))
-        starts = rng.uniform(buffer, box_lengths-buffer, size=(num_molecules, 3))
+        positions = np.empty((num_molecules * beads_per_molecule, 3))
+        starts = rng.uniform(
+            buffer, box_lengths - buffer, size=(num_molecules, 3)
+        )
 
-        thetas = rng.uniform(0,2*np.pi,size=(num_molecules,beads_per_molecule-1))
-        phis = np.arccos(rng.uniform(-1,1,size=(num_molecules,beads_per_molecule-1)))
-        x = np.sin(phis)*np.cos(thetas)
-        y = np.sin(phis)*np.sin(thetas)
+        thetas = rng.uniform(
+            0, 2 * np.pi, size=(num_molecules, beads_per_molecule - 1)
+        )
+        phis = np.arccos(
+            rng.uniform(-1, 1, size=(num_molecules, beads_per_molecule - 1))
+        )
+        x = np.sin(phis) * np.cos(thetas)
+        y = np.sin(phis) * np.sin(thetas)
         z = np.cos(phis)
 
-        deltas = np.stack([x,y,z],axis=2) * bond_length
+        deltas = np.stack([x, y, z], axis=2) * bond_length
         displacements = np.cumsum(deltas, axis=1)
 
         positions_view = positions.reshape(num_molecules, beads_per_molecule, 3)
         positions_view[:, 0, :] = starts
         positions_view[:, 1:, :] = starts[:, None, :] + displacements
 
-        #pbc
+        # pbc
         positions %= box_lengths
-        positions -= box_lengths/2
+        positions -= box_lengths / 2
         print(positions.shape)
         return positions
