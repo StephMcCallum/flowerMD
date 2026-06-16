@@ -1315,19 +1315,3 @@ class Simulation(hoomd.simulation.Simulation):
         )
         self.operations.writers.append(gsd_writer)
         self.operations.writers.append(table_file)
-
-        from utils.dpd_utils import simulation_energy_end
-        def dpd_sim_loop(self):
-            while not simulation_energy_end(
-                A=A,
-                r=min_pair_dist,
-                r_cut=r_cut,
-                num_pol=num_pol,
-                num_mon=num_mon,
-                density=density,
-                log_file_name=log_file_name,
-            ):
-                self.run_NVE(n_steps=sim_steps_incr, kT=1.0, tau_kt=0.01)
-                for writer in self.operations.writers:
-                    if hasattr(writer, "flush"):
-                        writer.flush()

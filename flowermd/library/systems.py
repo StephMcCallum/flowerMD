@@ -70,7 +70,7 @@ class mbuildSystem(System):
         return comp
 
 class RandomWalk(System):
-    """Places molecules in the system using a vectorized random walk algorithm.
+    """Places molecules in the system using in a random walk.
     
     Assumes all beads in each molecule are identical type (e.g., all "A" beads).
     All molecules are positioned in a single vectorized computation:
@@ -94,11 +94,6 @@ class RandomWalk(System):
     **kwargs
         Additional keyword arguments passed to System.
     
-    Notes
-    -----
-    This implementation uses vectorized numpy operations to generate positions
-    for all molecules at once, providing significant performance benefits
-    compared to per-molecule iteration.
     """
     
     def __init__(
@@ -110,7 +105,6 @@ class RandomWalk(System):
         unique_molecules=True,
         **kwargs,
     ):
-        # Handle density units
         if not isinstance(density, u.array.unyt_quantity):
             self.density = density * u.Unit("g") / u.Unit("cm**3")
             warnings.warn(
@@ -135,7 +129,6 @@ class RandomWalk(System):
         Uses vectorized computation to generate all positions at once.
         """
         
-        # Calculate target box based on density
         mass_density = u.Unit("kg") / u.Unit("m**3")
         number_density = u.Unit("nm**-3")
         
@@ -155,7 +148,6 @@ class RandomWalk(System):
                 f"number density ({number_density.dimensions}) are supported."
             )
         
-        # Validate unique_molecules logic
         if not self.unique_molecules and len(self._molecules) > 1:
             raise ValueError(
                 f"unique_molecules kwarg was set to {self.unique_molecules}, "
@@ -170,31 +162,27 @@ class RandomWalk(System):
                     "which doesn't match the polydisperse system given: "
                     f"{self._molecules[0].n_mols}"
                 )
+                
+        box_lengths = target_box.to_value('nm')
+        Lx = box_lengths[0]
         
-        # Extract box lengths (magnitude removes units)
-        box_lengths = target_box.to_value('nm')[0]
-        
-        # Initialize random number generator
         rng = np.random.default_rng(self.seed)
-        
-        # VECTORIZED: Generate all random walk positions at once
-        # Shape: (num_molecules, beads_per_molecule, 3)
         all_positions = self._generate_all_random_walks_vectorized(
             num_molecules=self.n_mols,
             beads_per_molecule=self.lengths,
             bond_length=self.bond_length,
-            box_lengths=box_lengths,
+            box_lengths=Lx,
             rng=rng,
         )
         
-        # Create system compound
         system = mb.Compound()
         
         # Apply positions to all molecules and add to system
-        for mol_idx, molecule in enumerate(self.all_molecules): #TODO: fix this
-            positions = all_positions[mol_idx]
-            molecule.translate_to(positions)
-            system.add(molecule)
+        for idx, chain in enumerate(self.all_molecules):
+            positions = all_positions[idx]
+            for bead_idx, bead in enumerate(chain):
+                bead.translate_to(positions[bead_idx])
+            system.add(chain)
         
         # Set system box from density calculation
         system.box = mb.box.Box(box_lengths)
@@ -241,38 +229,21 @@ class RandomWalk(System):
             Array of shape (num_molecules, beads_per_molecule, 3) with all
             positions in nm.
         """
-        # Initialize positions array: (num_molecules, beads_per_molecule, 3)
         positions = np.empty((num_molecules, beads_per_molecule, 3))
-        
-        # STEP 1: First bead for all molecules - random positions
-        # Shape: (num_molecules, 3)
         positions[:, 0, :] = rng.uniform(0, box_lengths, size=(num_molecules, 3))
-        
-        # STEP 2: Subsequent beads - vectorized random walk
-        # All beads are identical type, so bond_length is constant
+
         for i in range(1, beads_per_molecule):
-            # Generate random directions for ALL molecules at once
-            # theta: shape (num_molecules,)
-            # phi: shape (num_molecules,)
             theta = rng.uniform(0, 2 * np.pi, size=num_molecules)
             phi = np.arccos(rng.uniform(-1, 1, size=num_molecules))
-            
-            # Vectorized direction calculation
-            # Result shape: (num_molecules, 3)
+
             direction = np.array([
                 np.sin(phi) * np.cos(theta),
                 np.sin(phi) * np.sin(theta),
                 np.cos(phi)
-            ]).T  # Transpose to (num_molecules, 3)
-            
-            # Apply to all molecules: each gets bond_length step in random direction
-            # Broadcasting: (num_molecules, 3) + (num_molecules, 3)
+            ]).T 
+
             positions[:, i, :] = positions[:, i - 1, :] + bond_length * direction
         
-        # STEP 3: Apply periodic boundary conditions
-        # Individual beads can wrap across boundaries
         positions %= box_lengths
-        print(positions)
-        
         return positions
 

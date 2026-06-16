@@ -73,7 +73,7 @@ class Bead_Spring_DPD(BaseXMLForcefield):
     """Forcefield class for loading a forcefield from an XML file."""
 
     def __init__(self, forcefield_files=f"{FF_DIR}/hoomd-dpd-hhp.xml"):
-        super(FF_from_file, self).__init__(forcefield_files=forcefield_files)
+        super(Bead_Spring_DPD, self).__init__(forcefield_files=forcefield_files)
         self.description = "DPD forcefield loaded from an XML file."
         
 class FF_from_file(BaseXMLForcefield):
