@@ -17,3 +17,6 @@ from .utils import (
     get_target_box_mass_density,
     get_target_box_number_density,
 )
+
+from .dpd_utils import (
+    simulation_energy_end)

@@ -100,6 +100,8 @@ class RandomWalk(System):
     def __init__(
         self,
         molecules,
+        buffer,
+        bond_length,
         density: float,
         base_units=dict(),
         seed=12345,
@@ -116,10 +118,10 @@ class RandomWalk(System):
 
         self.seed = seed
         self.unique_molecules = unique_molecules
-        self.bond_length = molecules.bond_lengths["A-A"]
-        self.n_mols = molecules.n_mols[0]
-        self.lengths = molecules.lengths[0]
-
+        self.bond_length =  bond_length
+        self.n_mols =  molecules.n_mols[0]
+        self.lengths =  molecules.lengths[0]
+        self.buffer =  buffer
         super(RandomWalk, self).__init__(
             molecules=molecules, base_units=base_units, **kwargs
         )
@@ -173,6 +175,7 @@ class RandomWalk(System):
             beads_per_molecule=self.lengths,
             bond_length=self.bond_length,
             box_lengths=Lx,
+            buffer=self.buffer,
             rng=rng,
         )
 
@@ -180,21 +183,15 @@ class RandomWalk(System):
 
         # Apply positions to all molecules and add to system
         for idx, chain in enumerate(self.all_molecules):
-            positions = all_positions[idx]
             for bead_idx, bead in enumerate(chain):
-                bead.translate_to(positions[bead_idx])
+                flat_idx = idx * self.lengths + bead_idx
+                bead.translate_to(all_positions[flat_idx])
             system.add(chain)
 
         # Set system box from density calculation
         system.box = mb.box.Box(box_lengths)
 
-        # Center system in its box
-        center = np.array(
-            [system.box.Lx / 2, system.box.Ly / 2, system.box.Lz / 2]
-        )
-        system.translate_to(center)
-
-        return system
+       return system
 
     def _generate_all_random_walks_vectorized(
         self,
@@ -202,6 +199,7 @@ class RandomWalk(System):
         beads_per_molecule,
         bond_length,
         box_lengths,
+        buffer,
         rng,
     ):
         """Generate random walk positions for ALL identical molecules at once.
@@ -228,26 +226,24 @@ class RandomWalk(System):
             Array of shape (num_molecules, beads_per_molecule, 3) with all
             positions in nm.
         """
-        positions = np.empty((num_molecules, beads_per_molecule, 3))
-        positions[:, 0, :] = rng.uniform(
-            0, box_lengths, size=(num_molecules, 3)
-        )
-
-        for i in range(1, beads_per_molecule):
-            theta = rng.uniform(0, 2 * np.pi, size=num_molecules)
-            phi = np.arccos(rng.uniform(-1, 1, size=num_molecules))
-
-            direction = np.array(
-                [
-                    np.sin(phi) * np.cos(theta),
-                    np.sin(phi) * np.sin(theta),
-                    np.cos(phi),
-                ]
-            ).T
-
-            positions[:, i, :] = (
-                positions[:, i - 1, :] + bond_length * direction
-            )
-
+        positions = np.empty((num_molecules*beads_per_molecule, 3))
+        starts = rng.uniform(buffer, box_lengths-buffer, size=(num_molecules, 3))
+    
+        thetas = rng.uniform(0,2*np.pi,size=(num_molecules,beads_per_molecule-1))
+        phis = np.arccos(rng.uniform(-1,1,size=(num_molecules,beads_per_molecule-1)))
+        x = np.sin(phis)*np.cos(thetas)
+        y = np.sin(phis)*np.sin(thetas)
+        z = np.cos(phis)
+    
+        deltas = np.stack([x,y,z],axis=2) * bond_length
+        displacements = np.cumsum(deltas, axis=1)
+    
+        positions_view = positions.reshape(num_molecules, beads_per_molecule, 3)
+        positions_view[:, 0, :] = starts
+        positions_view[:, 1:, :] = starts[:, None, :] + displacements
+    
+        #pbc
         positions %= box_lengths
+        positions -= box_lengths/2
+        print(positions.shape)
         return positions

@@ -4,6 +4,7 @@ import hoomd
 from utils.dpd_utils import simulation_energy_end
 
 from flowermd.base.simulation import Simulation
+from flowermd.utils.dpd_utils import simulation_energy_end
 
 
 class DPDInit(Simulation):
@@ -13,8 +14,11 @@ class DPDInit(Simulation):
         self,
         initial_state,
         forcefield,
-        tensile_axis,
-        fix_ratio=0.20,
+        A,
+        r,
+        r_cut,
+        N,
+        sim_steps_incr,
         reference_values=dict(),
         dt=0.0001,
         device=hoomd.device.auto_select(),
@@ -23,13 +27,12 @@ class DPDInit(Simulation):
         gsd_file_name="trajectory.gsd",
         log_write_freq=1e3,
         log_file_name="log.txt",
-        A=A,
-        r=min_pair_dist,
-        r_cut=r_cut,
-        num_pol=num_pol,
-        num_mon=num_mon,
-        density=density,
     ):
+        self.A=A
+        self.r=r
+        self.r_cut=r_cut
+        self.N=N
+        self.sim_steps_incr = sim_steps_incr
         super(DPDInit, self).__init__(
             initial_state=initial_state,
             forcefield=forcefield,
@@ -42,17 +45,17 @@ class DPDInit(Simulation):
             log_write_freq=log_write_freq,
             log_file_name=log_file_name,
         )
-
+        print(self.A,self.r,self.r_cut,self.density)
+        self.run_NVE(n_steps=1)
         while not simulation_energy_end(
-            A=A,
-            r=min_pair_dist,
+            A=self.A,
+            r=self.r,
             r_cut=self.r_cut,
-            num_pol=num_pol,
-            num_mon=num_mon,
-            density=density,
+            N=self.N,
+            density=self.density,
             log_file_name=self.log_file_name,
         ):
-            self.run_NVE(n_steps=sim_steps_incr, kT=1.0, tau_kt=0.01)
+            self.run_NVE(n_steps=self.sim_steps_incr)
             for writer in self.operations.writers:
                 if hasattr(writer, "flush"):
                     writer.flush()

@@ -12,6 +12,7 @@ from .forcefields import (
     Bead_Spring_DPD,
     BeadSpring,
     EllipsoidFF_DPD,
+    DPD,
     EllipsoidForcefield,
     FF_from_file,
     KremerGrestBeadSpring,
