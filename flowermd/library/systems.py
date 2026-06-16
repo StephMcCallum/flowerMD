@@ -191,7 +191,7 @@ class RandomWalk(System):
         # Set system box from density calculation
         system.box = mb.box.Box(box_lengths)
 
-       return system
+        return system
 
     def _generate_all_random_walks_vectorized(
         self,
