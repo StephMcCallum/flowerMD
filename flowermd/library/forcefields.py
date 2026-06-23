@@ -69,11 +69,14 @@ class OPLS_AA_DIMETHYLETHER(BaseXMLForcefield):
             "Trimmed down to include only dimethyl ether parameters."
         )
 
+
 class Bead_Spring_DPD(BaseXMLForcefield):
     """Forcefield class for loading a forcefield from an XML file."""
 
     def __init__(self, forcefield_files=f"{FF_DIR}/hoomd-dpd-hhp.xml"):
-        super(Bead_Spring_DPD, self).__init__(forcefield_files=forcefield_files,gmso_xml=True)
+        super(Bead_Spring_DPD, self).__init__(
+            forcefield_files=forcefield_files, gmso_xml=True
+        )
         self.description = "DPD forcefield loaded from an XML file."
 
 

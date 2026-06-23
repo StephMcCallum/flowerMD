@@ -12,7 +12,7 @@ class BaseXMLForcefield(foyer.Forcefield or ForceField):
         super(BaseXMLForcefield, self).__init__(
             forcefield_files=forcefield_files, name=name
         )
-        if self.gmso_xml==True:
+        if self.gmso_xml == True:
             self.gmso_ff = ForceField(forcefield_files or name)
 
         else:
