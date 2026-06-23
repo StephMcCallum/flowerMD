@@ -2,18 +2,23 @@
 
 import forcefield_utilities as ffutils
 import foyer
+from gmso.core.forcefield import ForceField
 
 
-class BaseXMLForcefield(foyer.Forcefield):
+class BaseXMLForcefield(foyer.Forcefield or ForceField):
     """Base XML forcefield class."""
 
     def __init__(self, forcefield_files=None, name=None):
         super(BaseXMLForcefield, self).__init__(
             forcefield_files=forcefield_files, name=name
         )
-        self.gmso_ff = (
-            ffutils.FoyerFFs().load(forcefield_files or name).to_gmso_ff()
-        )
+        if self.gmso_xml==True:
+            self.gmso_ff = ForceField(forcefield_files or name)
+
+        else:
+            self.gmso_ff = (
+                ffutils.FoyerFFs().load(forcefield_files or name).to_gmso_ff()
+            )
 
 
 class BaseHOOMDForcefield:
