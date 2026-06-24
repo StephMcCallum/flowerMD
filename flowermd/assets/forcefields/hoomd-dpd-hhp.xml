@@ -2,8 +2,10 @@
     <FFMetaData combiningRule="lorentz">
         <Units energy="kJ/mol" distance="nm" mass="amu" time="s" charge="coulomb"/>
     </FFMetaData>
-    <AtomTypes>
+    <AtomTypes expression="0">
        <AtomType name="A" element="A" atomclass="A" mass="1.0" charge="0.0" definition="A" description="CG Bead">
+           <Parameters>
+           </Parameters>
        </AtomType>
     </AtomTypes>
     <BondTypes expression="0.5 * k * (r-r_eq)**2">
@@ -12,13 +14,13 @@
         <BondType name="HarmonicBondPotential" type1="A" type2="A">
             <Parameters>
                 <Parameter name="r_eq" value="1.0"/>
-                <Parameter name="k" value="20000"/>
+                <Parameter name="k" value="10"/>
             </Parameters>
         </BondType>
     </BondTypes>
     <AngleTypes expression="0.5 * k * (theta-theta_eq)**2">
-        <ParametersUnitDef parameter="theta_eq" unit="radians"/>
-        <ParametersUnitDef parameter="k" unit="kJ/mol/(radians**2)"/>
+        <ParametersUnitDef parameter="theta_eq" unit="rad"/>
+        <ParametersUnitDef parameter="k" unit="kJ/mol/(rad**2)"/>
         <AngleType name="HarmonicAnglePotential" type1="A" type2="A" type3="A">
             <Parameters>
                 <Parameter name="theta_eq" value="1.0"/>
@@ -27,10 +29,10 @@
         </AngleType>
     </AngleTypes>
     <DihedralTypes expression="0.5 * k * (1 + d * cos(n*phi-phi_eq))">
-        <ParametersUnitDef parameter="phi_eq" unit="radians"/>
+        <ParametersUnitDef parameter="phi_eq" unit="rad"/>
         <ParametersUnitDef parameter="k" unit="kJ/mol"/>
-        <ParametersUnitDef parameter="d"/>
-        <ParametersUnitDef parameter="n"/>
+        <ParametersUnitDef parameter="d" unit="dimensionless"/>
+        <ParametersUnitDef parameter="n" unit="dimensionless"/>
         <DihedralType name="HOOMDPeriodicDihedralPotential" type1="A" type2="A" type3="A" type4="A">
             <Parameters>
                 <Parameter name="phi_eq" value="0"/>
@@ -47,9 +49,9 @@
     <ParametersUnitDef parameter="γ" unit="amu/s"/>
     <PairPotentialType name="HOOMDDPDForce" type1="A" type2="A">
         <Parameters>
-            <Parameter name="A" value="800.0"/>
+            <Parameter name="A" value="40.0"/>
 	    <Parameter name="r_cut" value="1.0"/>
-	    <Parameter name="γ" value="800.0"/>
+	    <Parameter name="γ" value="8.0"/>
         </Parameters>
     </PairPotentialType>
   </PairPotentialTypes>
