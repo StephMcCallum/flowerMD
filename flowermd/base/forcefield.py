@@ -1,18 +1,19 @@
 """Base forcefield classes."""
 
 import forcefield_utilities as ffutils
-import foyer
 from gmso.core.forcefield import ForceField
 
 
-class BaseXMLForcefield(foyer.Forcefield or ForceField):
+class BaseXMLForcefield:
     """Base XML forcefield class."""
 
-    def __init__(self, forcefield_files=None, name=None):
-        super(BaseXMLForcefield, self).__init__(
-            forcefield_files=forcefield_files, name=name
-        )
-        if self.gmso_xml == True:
+    def __init__(self, forcefield_files=None, name=None, gmso_xml=None):
+        self.forcefield_files = forcefield_files
+        self.name = name
+        self.gmso_xml = gmso_xml
+        if all([name, forcefield_files]):
+            raise ValueError("Give only one of `name` or `forcefield_files`.")
+        if self.gmso_xml is True:
             self.gmso_ff = ForceField(forcefield_files or name)
 
         else:

@@ -13,7 +13,7 @@ from flowermd.base import BaseHOOMDForcefield, BaseXMLForcefield
 class GAFF(BaseXMLForcefield):
     """General Amber forcefield class."""
 
-    def __init__(self, forcefield_files=f"{FF_DIR}/gaff.xml"):
+    def __init__(self, forcefield_files=f"{FF_DIR}/gaff.xml", gmso_xml=False):
         super(GAFF, self).__init__(forcefield_files=forcefield_files)
         self.description = (
             "The General Amber Forcefield written in foyer XML format. "
@@ -25,7 +25,7 @@ class GAFF(BaseXMLForcefield):
 class OPLS_AA(BaseXMLForcefield):
     """OPLS All Atom forcefield class."""
 
-    def __init__(self, name="oplsaa"):
+    def __init__(self, name="oplsaa", gmso_xml=False):
         super(OPLS_AA, self).__init__(name=name)
         self.description = "opls-aa forcefield found in the Foyer package."
 
@@ -33,7 +33,9 @@ class OPLS_AA(BaseXMLForcefield):
 class OPLS_AA_PPS(BaseXMLForcefield):
     """OPLS All Atom for PPS molecule forcefield class."""
 
-    def __init__(self, forcefield_files=f"{FF_DIR}/pps_opls.xml"):
+    def __init__(
+        self, forcefield_files=f"{FF_DIR}/pps_opls.xml", gmso_xml=False
+    ):
         super(OPLS_AA_PPS, self).__init__(forcefield_files=forcefield_files)
         self.description = (
             "Based on flowermd.forcefields.OPLS_AA. "
@@ -49,7 +51,9 @@ class OPLS_AA_PPS(BaseXMLForcefield):
 class OPLS_AA_BENZENE(BaseXMLForcefield):
     """OPLS All Atom for benzene molecule forcefield class."""
 
-    def __init__(self, forcefield_files=f"{FF_DIR}/benzene_opls.xml"):
+    def __init__(
+        self, forcefield_files=f"{FF_DIR}/benzene_opls.xml", gmso_xml=False
+    ):
         super(OPLS_AA_BENZENE, self).__init__(forcefield_files=forcefield_files)
         self.description = (
             "Based on flowermd.forcefields.OPLS_AA. "
@@ -60,7 +64,11 @@ class OPLS_AA_BENZENE(BaseXMLForcefield):
 class OPLS_AA_DIMETHYLETHER(BaseXMLForcefield):
     """OPLS All Atom for dimethyl ether molecule forcefield class."""
 
-    def __init__(self, forcefield_files=f"{FF_DIR}/dimethylether_opls.xml"):
+    def __init__(
+        self,
+        forcefield_files=f"{FF_DIR}/dimethylether_opls.xml",
+        gmso_xml=False,
+    ):
         super(OPLS_AA_DIMETHYLETHER, self).__init__(
             forcefield_files=forcefield_files
         )
@@ -83,8 +91,10 @@ class Bead_Spring_DPD(BaseXMLForcefield):
 class FF_from_file(BaseXMLForcefield):
     """Forcefield class for loading a forcefield from an XML file."""
 
-    def __init__(self, forcefield_files):
-        super(FF_from_file, self).__init__(forcefield_files=forcefield_files)
+    def __init__(self, forcefield_files, gmso_xml):
+        super(FF_from_file, self).__init__(
+            forcefield_files=forcefield_files, gmso_xml=gmso_xml
+        )
         self.description = "Forcefield loaded from an XML file. "
 
 
