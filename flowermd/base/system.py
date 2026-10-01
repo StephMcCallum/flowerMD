@@ -410,7 +410,7 @@ class System(ABC):
     def _convert_to_gmso(self):
         """Convert the mbuild system to a gmso system."""
         topology = from_mbuild(self.system)
-        topology.identify_connections()
+        #topology.identify_connections()
         return topology
 
     def _create_hoomd_forcefield(self, r_cut, kT, nlist, pppm_kwargs):
@@ -568,7 +568,7 @@ class System(ABC):
             self.gmso_system,
             self._gmso_forcefields_dict,
             match_ff_by="group",
-            identify_connections=True,
+            identify_connections=False,
             speedup_by_moltag=speedup_by_moltag,
             speedup_by_molgraph=speedup_by_molgraph,
         )
