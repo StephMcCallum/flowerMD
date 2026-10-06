@@ -62,9 +62,7 @@ class Molecule:
         file=None,
         compound=None,
         name="Compound",
-        include_angles=True,
-        include_dihedrals=True,
-        include_impropers=True,
+        identify_connections=True,
     ):
         self.n_mols = num_mols
         self.force_field = force_field
@@ -72,9 +70,7 @@ class Molecule:
         self.file = file
         self.compound = compound
         self.name = name
-        self.include_angles = include_angles
-        self.include_dihedrals = include_dihedrals
-        self.include_impropers = include_impropers
+        self.identify_connections = identify_connections
         self._mapping = None
         self._mb_molecule = self._load()
         self._molecules = []
@@ -439,20 +435,13 @@ class Molecule:
         self._identify_particle_information(gmso_molecule)
         self._identify_pairs(self.particle_types)
         self._identify_bond_types(gmso_molecule)
-
-        if self.include_angles:
+        if self.identify_connections:
             self._identify_angle_types(gmso_molecule)
-        else:
-            self.angle_types = set()
-
-        if self.include_dihedrals:
             self._identify_dihedral_types(gmso_molecule)
-        else:
-            self.dihedral_types = set()
-
-        if self.include_impropers:
             self._identify_improper_types(gmso_molecule)
         else:
+            self.angle_types = set()
+            self.dihedral_types = set()
             self.improper_types = set()
 
     def _validate_force_field(self):
@@ -461,7 +450,7 @@ class Molecule:
             self.gmso_molecule = apply(
                 self.gmso_molecule,
                 self.force_field.gmso_ff,
-                identify_connections=False,
+                identify_connections=self.identify_connections,
                 speedup_by_moltag=True,
                 speedup_by_molgraph=False,
                 **kwargs,
