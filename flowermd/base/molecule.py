@@ -73,7 +73,7 @@ class Molecule:
         self.compound = compound
         self.name = name
         self.include_angles = include_angles
-        self.include_dihedrals =  include_dihedrals
+        self.include_dihedrals = include_dihedrals
         self.include_impropers = include_impropers
         self._mapping = None
         self._mb_molecule = self._load()
@@ -268,7 +268,7 @@ class Molecule:
     def _convert_to_gmso(self, mb_molecule):
         """Convert the mbuild molecule to a GMSO topology."""
         topology = from_mbuild(mb_molecule)
-        #topology.identify_connections()
+        # topology.identify_connections()
         return topology
 
     def _identify_particle_information(self, gmso_molecule):
@@ -444,12 +444,12 @@ class Molecule:
             self._identify_angle_types(gmso_molecule)
         else:
             self.angle_types = set()
-            
+
         if self.include_dihedrals:
             self._identify_dihedral_types(gmso_molecule)
         else:
             self.dihedral_types = set()
-            
+
         if self.include_impropers:
             self._identify_improper_types(gmso_molecule)
         else:

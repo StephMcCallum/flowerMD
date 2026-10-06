@@ -285,7 +285,10 @@ class LJChain(Polymer):
         self.bead_mass = bead_mass
         self.bond_lengths = bond_lengths
         super(LJChain, self).__init__(
-            lengths=lengths, num_mols=num_mols, name=name, **kwargs,
+            lengths=lengths,
+            num_mols=num_mols,
+            name=name,
+            **kwargs,
         )
 
     def _build(self, length):
