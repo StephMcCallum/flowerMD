@@ -11,7 +11,6 @@ from flowermd.base.system import System
 from flowermd.utils import (
     get_target_box_mass_density,
     get_target_box_number_density,
-
 )
 
 
@@ -126,35 +125,41 @@ class RandomWalk(System):
     def _build_system(self, **kwargs):
         mass_density = u.Unit("kg") / u.Unit("m**3")
         number_density = u.Unit("nm**-3")
-    
+
         if self.density.units.dimensions == mass_density.dimensions:
-            target_box = get_target_box_mass_density(density=self.density, mass=self.mass).to("nm")
+            target_box = get_target_box_mass_density(
+                density=self.density, mass=self.mass
+            ).to("nm")
         elif self.density.units.dimensions == number_density.dimensions:
-            target_box = get_target_box_number_density(density=self.density, n_beads=self.n_particles).to("nm")
+            target_box = get_target_box_number_density(
+                density=self.density, n_beads=self.n_particles
+            ).to("nm")
         else:
             raise ValueError(
                 f"Density dimensions of {self.density.units.dimensions} were given, "
                 f"but only mass density ({mass_density.dimensions}) and "
                 f"number density ({number_density.dimensions}) are supported."
             )
-    
+
         box_lengths = target_box.to_value("nm")
         rng = np.random.default_rng(self.seed)
 
         system = mb.Compound()
         system.add(self.all_molecules)
-    
+
         particles = list(system.particles())
         idx_map = {p: i for i, p in enumerate(particles)}
         bonds = np.array(
             [(idx_map[b[0]], idx_map[b[1]]) for b in system.bonds()], dtype=int
         )
-    
+
         positions = random_walk_positions_from_bonds(
             bonds=bonds,
             n_particles=len(particles),
             bond_length=self.bond_length,
-            box_lengths=box_lengths[0],  # cubic box; pass box_lengths directly if not
+            box_lengths=box_lengths[
+                0
+            ],  # cubic box; pass box_lengths directly if not
             buffer=self.buffer,
             rng=rng,
         )

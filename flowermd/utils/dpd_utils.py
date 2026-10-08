@@ -1,6 +1,6 @@
 import freud
-import numpy as np
 import networkx as nx
+import numpy as np
 
 
 def compute_closest_rdf(sim, bins=100, r_max=1.0):
@@ -55,7 +55,9 @@ def random_walk_positions_from_bonds(
         rng = np.random.default_rng()
 
     bonds = np.asarray(bonds, dtype=int)
-    box_lengths = np.broadcast_to(np.asarray(box_lengths, dtype=float), (3,)).copy()
+    box_lengths = np.broadcast_to(
+        np.asarray(box_lengths, dtype=float), (3,)
+    ).copy()
 
     graph = nx.Graph()
     graph.add_nodes_from(range(n_particles))  # keeps isolated particles too
@@ -73,7 +75,9 @@ def random_walk_positions_from_bonds(
             parent[c] = p
 
     positions = np.empty((n_particles, 3))
-    positions[roots] = rng.uniform(buffer, box_lengths - buffer, size=(len(roots), 3))
+    positions[roots] = rng.uniform(
+        buffer, box_lengths - buffer, size=(len(roots), 3)
+    )
 
     for d in range(1, depth.max() + 1):
         children = np.where(depth == d)[0]
@@ -83,13 +87,19 @@ def random_walk_positions_from_bonds(
 
         theta = rng.uniform(0, 2 * np.pi, size=len(children))
         phi = np.arccos(rng.uniform(-1, 1, size=len(children)))
-        step = np.column_stack(
-            [np.sin(phi) * np.cos(theta), np.sin(phi) * np.sin(theta), np.cos(phi)]
-        ) * bond_length
+        step = (
+            np.column_stack(
+                [
+                    np.sin(phi) * np.cos(theta),
+                    np.sin(phi) * np.sin(theta),
+                    np.cos(phi),
+                ]
+            )
+            * bond_length
+        )
 
         positions[children] = positions[parents] + step
 
     positions %= box_lengths
     positions -= box_lengths / 2
     return positions
-
