@@ -36,43 +36,43 @@
     <PairPotentialType name="HOOMDDPDForce" type1="_A" type2="_A">
         <Parameters>
             <Parameter name="A" value="250000"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
     <PairPotentialType name="HOOMDDPDForce" type1="_A" type2="_B">
         <Parameters>
             <Parameter name="A" value="250000.0"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
     <PairPotentialType name="HOOMDDPDForce" type1="_B" type2="_B">
         <Parameters>
             <Parameter name="A" value="250000.0"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
     <PairPotentialType name="HOOMDDPDForce" type1="_B" type2="_C">
         <Parameters>
             <Parameter name="A" value="250000.0"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
     <PairPotentialType name="HOOMDDPDForce" type1="_C" type2="_C">
         <Parameters>
             <Parameter name="A" value="250000.0"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
     <PairPotentialType name="HOOMDDPDForce" type1="_A" type2="_C">
         <Parameters>
             <Parameter name="A" value="250000.0"/>
-	    <Parameter name="r_cut" value="1.01"/>
-	    <Parameter name="γ" value="1500"/>
+	        <Parameter name="r_cut" value="1.01"/>
+	        <Parameter name="γ" value="1500"/>
         </Parameters>
     </PairPotentialType>
   </PairPotentialTypes>
