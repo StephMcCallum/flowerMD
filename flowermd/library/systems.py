@@ -11,6 +11,7 @@ from flowermd.base.system import System
 from flowermd.utils import (
     get_target_box_mass_density,
     get_target_box_number_density,
+    random_walk_positions_from_bonds,
 )
 
 
@@ -115,8 +116,6 @@ class RandomWalk(System):
         self.seed = seed
         self.unique_molecules = unique_molecules
         self.bond_length = bond_length
-        self.n_mols = sum(molecules.n_mols)
-        self.lengths = max(molecules.lengths)
         self.buffer = buffer
         super(RandomWalk, self).__init__(
             molecules=molecules, base_units=base_units, **kwargs
